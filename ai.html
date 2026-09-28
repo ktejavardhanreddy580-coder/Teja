@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Based Smart Allocation Engine - PM Internship Scheme</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        saffron: { 500: '#FF9933', 600: '#E68A2E' },
+                        navy: { 700: '#0B2545', 800: '#081D35', 900: '#051221' },
+                        indiaGreen: { 600: '#138808', 700: '#0F6B06' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-full flex flex-col antialiased">
+
+    <!-- Top Government Banner -->
+    <header class="bg-navy-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-saffron-500 via-white to-indiaGreen-600 p-0.5 flex items-center justify-center shadow">
+                        <div class="w-full h-full bg-navy-900 rounded-[7px] flex items-center justify-center">
+                            <i data-lucide="cpu" class="w-5 h-5 text-saffron-500"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-semibold tracking-wider text-saffron-500 uppercase">Government of India</span>
+                            <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">AI Engine v2.4</span>
+                        </div>
+                        <h1 class="text-lg font-bold tracking-tight text-white">PM Internship Smart Allocation</h1>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex space-x-1 bg-navy-800 p-1.5 rounded-xl border border-slate-700">
+                    <button onclick="switchTab('simulator')" id="btn-simulator" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center space-x-2 bg-saffron-500 text-white shadow">
+                        <i data-lucide="sliders" class="w-4 h-4"></i>
+                        <span>Smart Match Simulator</span>
+                    </button>
+                    <button onclick="switchTab('candidate')" id="btn-candidate" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center space-x-2 text-slate-300 hover:text-white hover:bg-slate-700/50">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                        <span>Candidate Portal</span>
+                    </button>
+                    <button onclick="switchTab('employer')" id="btn-employer" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center space-x-2 text-slate-300 hover:text-white hover:bg-slate-700/50">
+                        <i data-lucide="briefcase" class="w-4 h-4"></i>
+                        <span>Enterprise Portal</span>
+                    </button>
+                    <button onclick="switchTab('admin')" id="btn-admin" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center space-x-2 text-slate-300 hover:text-white hover:bg-slate-700/50">
+                        <i data-lucide="pie-chart" class="w-4 h-4"></i>
+                        <span>Central Admin</span>
+                    </button>
+                </nav>
+
+                <!-- Mobile Menu Button & User Profile Badge -->
+                <div class="flex items-center space-x-3">
+                    <div class="hidden sm:flex items-center space-x-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 text-xs text-slate-300">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>Neural Match Engine: <strong class="text-emerald-400">Online</strong></span>
+                    </div>
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg bg-slate-800 text-slate-200">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-navy-800 border-t border-slate-700 px-4 py-3 space-y-2">
+            <button onclick="switchTab('simulator'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 bg-saffron-500 text-white">
+                <i data-lucide="sliders" class="w-4 h-4"></i><span>Smart Match Simulator</span>
+            </button>
+            <button onclick="switchTab('candidate'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 text-slate-200 hover:bg-slate-700">
+                <i data-lucide="user" class="w-4 h-4"></i><span>Candidate Portal</span>
+            </button>
+            <button onclick="switchTab('employer'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 text-slate-200 hover:bg-slate-700">
+                <i data-lucide="briefcase" class="w-4 h-4"></i><span>Enterprise Portal</span>
+            </button>
+            <button onclick="switchTab('admin'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 text-slate-200 hover:bg-slate-700">
+                <i data-lucide="pie-chart" class="w-4 h-4"></i><span>Central Admin Dashboard</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ================= 1. INTERACTIVE SMART MATCH SIMULATOR ================= -->
+        <div id="tab-simulator" class="tab-content active space-y-6">
+            <div class="bg-gradient-to-r from-navy-900 to-navy-800 rounded-2xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute right-0 bottom-0 translate-x-10 translate-y-10 w-64 h-64 bg-saffron-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="max-w-2xl">
+                    <span class="text-xs uppercase font-bold tracking-widest text-saffron-500 bg-saffron-500/10 px-3 py-1 rounded-full border border-saffron-500/20">Live Neural Match Simulator</span>
+                    <h2 class="text-2xl md:text-3xl font-bold mt-3 tracking-tight">Test the AI Allocation Vector</h2>
+                    <p class="text-slate-300 text-sm mt-2">Adjust candidate skill proficiencies and internship requirements below to experience real-time multi-dimensional scoring, explainable AI breakdown, and placement probability.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Controls Column -->
+                <div class="lg:col-span-7 space-y-6">
+                    <!-- Candidate Profile Input Card -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-slate-900 flex items-center space-x-2">
+                                <i data-lucide="user-check" class="w-5 h-5 text-saffron-500"></i>
+                                <span>Candidate Profile Parameters</span>
+                            </h3>
+                            <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-medium">ID: #CAND-9482</span>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Education Stream & Tier</label>
+                                <select id="sim-education" onchange="runSimulation()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-medium focus:ring-2 focus:ring-saffron-500 focus:outline-none">
+                                    <option value="tier1_tech">B.Tech / B.E. (Tier-1 Institution - IIT/NIT)</option>
+                                    <option value="tier2_tech" selected>B.Tech / B.E. (Tier-2/3 Institution)</option>
+                                    <option value="bsc_mca">B.Sc / BCA / MCA (Computer Science / IT)</option>
+                                    <option value="diploma">Diploma in Engineering / Technical Vocational</option>
+                                    <option value="management">BBA / MBA / Commerce Graduate</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Preferred Sector</label>
+                                    <select id="sim-sector" onchange="runSimulation()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-medium focus:ring-2 focus:ring-saffron-500 focus:outline-none">
+                                        <option value="tech">IT / Software & AI</option>
+                                        <option value="fintech">Banking & FinTech</option>
+                                        <option value="manufacturing" selected>Advanced Manufacturing & EV</option>
+                                        <option value="renewable">Green Energy & Solar</option>
+                                        <option value="infrastructure">Infrastructure & Logistics</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Preferred Location / Zone</label>
+                                    <select id="sim-location" onchange="runSimulation()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-medium focus:ring-2 focus:ring-saffron-500 focus:outline-none">
+                                        <option value="bengaluru">Bengaluru Hub (Karnataka)</option>
+                                        <option value="pune" selected>Pune Industrial Corridor (Maharashtra)</option>
+                                        <option value="ncr">Delhi-NCR Tech Zone</option>
+                                        <option value="chennai">Chennai Automotive Hub</option>
+                                        <option value="ahmedabad">Ahmedabad Manufacturing Zone</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Sliders for Skill Weights -->
+                            <div class="pt-2 border-t border-slate-100 space-y-3">
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                                        <span>Technical Skill Match (Python, CAD, React, SQL)</span>
+                                        <span id="val-tech">85%</span>
+                                    </div>
+                                    <input type="range" id="sim-tech" min="0" max="100" value="85" oninput="runSimulation()" class="w-full accent-saffron-500 cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                                        <span>Aspirational & Socio-Economic Priority (Diversity / Tier-3)</span>
+                                        <span id="val-priority">70%</span>
+                                    </div>
+                                    <input type="range" id="sim-priority" min="0" max="100" value="70" oninput="runSimulation()" class="w-full accent-saffron-500 cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                                        <span>Geographic Proximity Match</span>
+                                        <span id="val-geo">90%</span>
+                                    </div>
+                                    <input type="range" id="sim-geo" min="0" max="100" value="90" oninput="runSimulation()" class="w-full accent-saffron-500 cursor-pointer">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enterprise Requirements Card -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-900 flex items-center space-x-2 mb-3">
+                            <i data-lucide="building-2" class="w-5 h-5 text-indigo-600"></i>
+                            <span>Target Enterprise Opportunity</span>
+                        </h3>
+                        <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 flex items-center justify-between">
+                            <div>
+                                <h4 class="font-bold text-slate-800" id="emp-title">Tata Motors EV R&D Division</h4>
+                                <p class="text-xs text-slate-500 mt-0.5">Location: Pune Industrial Corridor • Stipend: ₹25,000/mo</p>
+                            </div>
+                            <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-full">Open Slot: 14/50</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results & Explanation Column -->
+                <div class="lg:col-span-5 space-y-6">
+                    <!-- Real-time Score Card -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 text-center relative overflow-hidden">
+                        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-saffron-500 via-indigo-600 to-indiaGreen-600"></div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">AI Composite Match Score</span>
+                        
+                        <div class="my-6 relative flex items-center justify-center">
+                            <!-- Circular score indicator -->
+                            <div class="w-36 h-36 rounded-full border-8 border-slate-100 flex items-center justify-center relative">
+                                <svg class="w-36 h-36 absolute -rotate-90" viewBox="0 0 36 36">
+                                    <path id="score-circle-path" class="text-saffron-500 transition-all duration-500" stroke-dasharray="88, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                </svg>
+                                <div class="text-center">
+                                    <span id="sim-final-score" class="text-4xl font-black text-slate-900 tracking-tight">88%</span>
+                                    <span class="block text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-0.5" id="sim-match-badge">High Fit</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Probability Bar -->
+                        <div class="space-y-2 text-left bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            <div class="flex justify-between text-xs font-semibold">
+                                <span class="text-slate-600">Allocation Success Probability</span>
+                                <span id="sim-prob-text" class="text-emerald-700 font-bold">94.2%</span>
+                            </div>
+                            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                                <div id="sim-prob-bar" class="bg-gradient-to-r from-saffron-500 to-indiaGreen-600 h-full transition-all duration-500" style="width: 94%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- One-Click Allocate Simulation Button -->
+                        <button onclick="triggerAllocationModal()" class="w-full mt-5 bg-gradient-to-r from-navy-900 to-navy-800 hover:from-navy-800 hover:to-navy-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center space-x-2">
+                            <i data-lucide="zap" class="w-4 h-4 text-saffron-500"></i>
+                            <span>Execute One-Click Smart Allocation</span>
+                        </button>
+                    </div>
+
+                    <!-- Explainable AI (XAI) Breakdown Card -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-900 flex items-center space-x-2 mb-3">
+                            <i data-lucide="cpu" class="w-5 h-5 text-indigo-600"></i>
+                            <span>Explainable AI (XAI) Breakdown</span>
+                        </h4>
+                        <div id="xai-factors" class="space-y-3 text-xs">
+                            <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-100 flex items-start space-x-2.5">
+                                <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 mt-0.5 shrink-0"></i>
+                                <div>
+                                    <strong class="text-emerald-900 block font-semibold">Skill Vector Alignment (+34%)</strong>
+                                    <span class="text-emerald-700">Candidate's Python & CAD skills closely mirror the enterprise's primary requirement vector.</span>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-blue-50 rounded-xl border border-blue-100 flex items-start space-x-2.5">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-blue-600 mt-0.5 shrink-0"></i>
+                                <div>
+                                    <strong class="text-blue-900 block font-semibold">Geographic Proximity (+25%)</strong>
+                                    <span class="text-blue-700">Candidate is based in the Pune region, reducing relocation friction and onboarding delay.</span>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-amber-50 rounded-xl border border-amber-100 flex items-start space-x-2.5">
+                                <i data-lucide="award" class="w-4 h-4 text-amber-600 mt-0.5 shrink-0"></i>
+                                <div>
+                                    <strong class="text-amber-900 block font-semibold">Inclusion & Tier Priority (+29%)</strong>
+                                    <span class="text-amber-700">Tier-3 institution background and gender diversity uplift applied successfully.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 2. CANDIDATE PORTAL ================= -->
+        <div id="tab-candidate" class="tab-content space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left: Profile & Skill Tagging -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <div class="w-16 h-16 rounded-2xl bg-saffron-500/10 border-2 border-saffron-500/30 flex items-center justify-center text-saffron-600 font-bold text-2xl">
+                                AK
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-900">Ananya Kumar</h3>
+                                <p class="text-xs text-slate-500">PM Internship ID: PMIN-2026-88421</p>
+                                <span class="inline-block mt-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Profile Verified (Aadhaar/NAPS)</span>
+                            </div>
+                        </div>
+
+                        <!-- Skill Tagging Component -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Verified Skill Vector Tags</label>
+                                <div class="flex flex-wrap gap-2 mb-3" id="skill-tags-container">
+                                    <span class="bg-slate-100 text-slate-800 text-xs font-medium px-3 py-1.5 rounded-xl border border-slate-200 flex items-center space-x-1">
+                                        <span>Python 3.x</span> <button onclick="removeSkill(this)" class="text-slate-400 hover:text-red-500 ml-1">&times;</button>
+                                    </span>
+                                    <span class="bg-slate-100 text-slate-800 text-xs font-medium px-3 py-1.5 rounded-xl border border-slate-200 flex items-center space-x-1">
+                                        <span>Data Analytics</span> <button onclick="removeSkill(this)" class="text-slate-400 hover:text-red-500 ml-1">&times;</button>
+                                    </span>
+                                    <span class="bg-slate-100 text-slate-800 text-xs font-medium px-3 py-1.5 rounded-xl border border-slate-200 flex items-center space-x-1">
+                                        <span>SQL & PostgreSQL</span> <button onclick="removeSkill(this)" class="text-slate-400 hover:text-red-500 ml-1">&times;</button>
+                                    </span>
+                                    <span class="bg-slate-100 text-slate-800 text-xs font-medium px-3 py-1.5 rounded-xl border border-slate-200 flex items-center space-x-1">
+                                        <span>AutoCAD Basics</span> <button onclick="removeSkill(this)" class="text-slate-400 hover:text-red-500 ml-1">&times;</button>
+                                    </span>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <input type="text" id="new-skill-input" placeholder="Add skill (e.g. React, Logistics)" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-saffron-500 focus:outline-none">
+                                    <button onclick="addSkill()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-slate-800 transition">Add Tag</button>
+                                </div>
+                            </div>
+
+                            <!-- Preferences -->
+                            <div class="pt-4 border-t border-slate-100 space-y-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Top Sector Preferences</label>
+                                    <select class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs font-medium">
+                                        <option>1. Information Technology & AI</option>
+                                        <option>2. FinTech & Banking Services</option>
+                                        <option>3. Renewable Energy & EV Infrastructure</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Preferred State / Location</label>
+                                    <select class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs font-medium">
+                                        <option>Karnataka (Bengaluru Hub)</option>
+                                        <option>Maharashtra (Pune / Mumbai)</option>
+                                        <option>Delhi NCR (Gurugram / Noida)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button onclick="showToast('Candidate profile updated & re-indexed in AI vector space!')" class="w-full bg-saffron-500 hover:bg-saffron-600 text-white font-semibold py-2.5 rounded-xl text-xs shadow transition">
+                                Save Profile & Sync with AI Engine
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: AI Matched Internship Opportunities -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-slate-900 flex items-center space-x-2">
+                                <i data-lucide="sparkles" class="w-5 h-5 text-saffron-500"></i>
+                                <span>Top AI-Matched Opportunities For You</span>
+                            </h3>
+                            <span class="text-xs bg-saffron-50 text-saffron-700 font-bold px-2.5 py-1 rounded-lg border border-saffron-200">98% Top Decile Match</span>
+                        </div>
+
+                        <div class="space-y-3">
+                            <!-- Opportunity 1 -->
+                            <div class="p-4 rounded-xl border border-slate-200 hover:border-saffron-500 transition-all bg-slate-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div class="space-y-1">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">96% Match</span>
+                                        <span class="text-xs text-slate-500">Tata Consultancy Services</span>
+                                    </div>
+                                    <h4 class="font-bold text-slate-900 text-sm">AI / ML Data Annotation & Analytics Intern</h4>
+                                    <p class="text-xs text-slate-600">Bengaluru • Stipend: ₹22,000/mo • 12 Months</p>
+                                </div>
+                                <button onclick="showToast('Application submitted via Smart Allocation Engine!')" class="w-full sm:w-auto bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow transition shrink-0">
+                                    One-Click Apply
+                                </button>
+                            </div>
+
+                            <!-- Opportunity 2 -->
+                            <div class="p-4 rounded-xl border border-slate-200 hover:border-saffron-500 transition-all bg-slate-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div class="space-y-1">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">91% Match</span>
+                                        <span class="text-xs text-slate-500">Infosys FinTech Labs</span>
+                                    </div>
+                                    <h4 class="font-bold text-slate-900 text-sm">Python Developer Intern (Digital Banking)</h4>
+                                    <p class="text-xs text-slate-600">Bengaluru • Stipend: ₹25,000/mo • 12 Months</p>
+                                </div>
+                                <button onclick="showToast('Application submitted via Smart Allocation Engine!')" class="w-full sm:w-auto bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow transition shrink-0">
+                                    One-Click Apply
+                                </button>
+                            </div>
+
+                            <!-- Opportunity 3 -->
+                            <div class="p-4 rounded-xl border border-slate-200 hover:border-saffron-500 transition-all bg-slate-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div class="space-y-1">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">84% Match</span>
+                                        <span class="text-xs text-slate-500">Bosch India Ltd</span>
+                                    </div>
+                                    <h4 class="font-bold text-slate-900 text-sm">Smart Manufacturing Automation Intern</h4>
+                                    <p class="text-xs text-slate-600">Pune • Stipend: ₹20,000/mo • 12 Months</p>
+                                </div>
+                                <button onclick="showToast('Application submitted via Smart Allocation Engine!')" class="w-full sm:w-auto bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow transition shrink-0">
+                                    One-Click Apply
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 3. ENTERPRISE / EMPLOYER PORTAL ================= -->
+        <div id="tab-employer" class="tab-content space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Post Internship Form -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-900 flex items-center space-x-2 mb-4">
+                            <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-600"></i>
+                            <span>Post Internship Opportunity</span>
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Internship Role Title</label>
+                                <input type="text" id="post-title" value="EV Battery Management Systems AI Intern" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-saffron-500 focus:outline-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Sector</label>
+                                    <select class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium">
+                                        <option>Advanced Manufacturing</option>
+                                        <option>IT & Software</option>
+                                        <option>Green Energy</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Openings Count</label>
+                                    <input type="number" value="25" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Required Skill Vectors (Comma separated)</label>
+                                <input type="text" value="Python, IoT Sensors, MATLAB, Embedded C" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Monthly Stipend (₹)</label>
+                                <input type="text" value="₹25,000 + CSR Housing Allowance" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium">
+                            </div>
+                            <button onclick="showToast('New opportunity published & broadcasted to AI Match Engine!')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-xs shadow transition">
+                                Publish Opportunity & Run Auto-Ranker
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI-Ranked Candidates List -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="font-bold text-slate-900 flex items-center space-x-2">
+                                    <i data-lucide="users" class="w-5 h-5 text-indigo-600"></i>
+                                    <span>AI-Ranked Candidate Pool (Top Matches)</span>
+                                </h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Showing ranked candidates for EV Battery R&D Division</p>
+                            </div>
+                            <button onclick="showToast('Batch Smart Allocation executed for top 25 candidates!')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow transition flex items-center space-x-1.5">
+                                <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                                <span>One-Click Batch Allocate</span>
+                            </button>
+                        </div>
+
+                        <!-- Table of Candidates -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-50 text-slate-600 uppercase font-semibold border-b border-slate-200">
+                                    <tr>
+                                        <th class="p-3">Candidate</th>
+                                        <th class="p-3">Education / Tier</th>
+                                        <th class="p-3">AI Match</th>
+                                        <th class="p-3">Vector Breakdown</th>
+                                        <th class="p-3 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="p-3 font-semibold text-slate-900">Rahul Sharma <span class="block text-[10px] text-slate-400 font-normal">#CAND-7712</span></td>
+                                        <td class="p-3 text-slate-600">B.Tech (Tier-2, Nagpur)</td>
+                                        <td class="p-3"><span class="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">97%</span></td>
+                                        <td class="p-3 text-slate-500">Python (95%), IoT (90%)</td>
+                                        <td class="p-3 text-right">
+                                            <button onclick="showToast('Candidate Rahul Sharma shortlisted & offer generated!')" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg font-medium transition">Shortlist</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="p-3 font-semibold text-slate-900">Priya Nair <span class="block text-[10px] text-slate-400 font-normal">#CAND-8921</span></td>
+                                        <td class="p-3 text-slate-600">B.Sc Computer Sci (Tier-3)</td>
+                                        <td class="p-3"><span class="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">94%</span></td>
+                                        <td class="p-3 text-slate-500">MATLAB (92%), Python (88%)</td>
+                                        <td class="p-3 text-right">
+                                            <button onclick="showToast('Candidate Priya Nair shortlisted & offer generated!')" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg font-medium transition">Shortlist</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="p-3 font-semibold text-slate-900">Amit Verma <span class="block text-[10px] text-slate-400 font-normal">#CAND-1192</span></td>
+                                        <td class="p-3 text-slate-600">Diploma Electronics (Tier-3)</td>
+                                        <td class="p-3"><span class="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">89%</span></td>
+                                        <td class="p-3 text-slate-500">Embedded C (94%), Sensors (85%)</td>
+                                        <td class="p-3 text-right">
+                                            <button onclick="showToast('Candidate Amit Verma shortlisted & offer generated!')" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg font-medium transition">Shortlist</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 4. CENTRAL ADMIN DASHBOARD ================= -->
+        <div id="tab-admin" class="tab-content space-y-6">
+            <!-- Top Metric Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Allocated Interns</span>
+                        <div class="w-10 h-10 rounded-xl bg-saffron-500/10 flex items-center justify-center text-saffron-600">
+                            <i data-lucide="users" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline space-x-2">
+                        <span class="text-2xl font-black text-slate-900">1,42,850</span>
+                        <span class="text-xs font-bold text-emerald-600">+14.2% this month</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Partner Enterprises</span>
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                            <i data-lucide="building" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline space-x-2">
+                        <span class="text-2xl font-black text-slate-900">3,480</span>
+                        <span class="text-xs font-bold text-emerald-600">500+ Fortune India</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">AI Match Confidence Avg</span>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                            <i data-lucide="Cpu" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline space-x-2">
+                        <span class="text-2xl font-black text-slate-900">92.6%</span>
+                        <span class="text-xs font-bold text-emerald-600">Optimal Bias Control</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pending Admin Overrides</span>
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
+                            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline space-x-2">
+                        <span class="text-2xl font-black text-slate-900">142</span>
+                        <span class="text-xs font-bold text-amber-600">Action Required</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Sector-wise Demand vs Supply Chart -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                            <i data-lucide="bar-chart-3" class="w-4 h-4 text-saffron-500"></i>
+                            <span>Sector-wise Demand vs Supply (AI Analytics)</span>
+                        </h3>
+                    </div>
+                    <div class="h-64 relative flex items-center justify-center">
+                        <canvas id="sectorChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Regional Distribution Chart -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                            <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-600"></i>
+                            <span>Regional Allocation Distribution</span>
+                        </h3>
+                    </div>
+                    <div class="h-64 relative flex items-center justify-center">
+                        <canvas id="regionalChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Override & Approval Queue Table -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="font-bold text-slate-900">Central Admin Override & Approval Queue</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Special exception requests requiring central nodal officer review</p>
+                    </div>
+                    <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full">142 Pending</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-600 uppercase font-semibold border-b border-slate-200">
+                            <tr>
+                                <th class="p-3">Request ID</th>
+                                <th class="p-3">Candidate & Enterprise</th>
+                                <th class="p-3">AI Flag / Reason</th>
+                                <th class="p-3">Status</th>
+                                <th class="p-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-3 font-semibold text-slate-900">#REQ-9921</td>
+                                <td class="p-3">
+                                    <span class="font-bold text-slate-800 block">Vikram Patel</span>
+                                    <span class="text-slate-500 text-[10px]">→ Larsen & Toubro Engineering</span>
+                                </td>
+                                <td class="p-3"><span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">Location Mismatch Exception</span></td>
+                                <td class="p-3"><span class="text-amber-600 font-semibold">Pending Review</span></td>
+                                <td class="p-3 text-right space-x-2">
+                                    <button onclick="showToast('Request #REQ-9921 Approved by Central Admin!')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg font-medium transition">Approve</button>
+                                    <button onclick="showToast('Request #REQ-9921 Rejected!')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded-lg font-medium transition">Reject</button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-3 font-semibold text-slate-900">#REQ-8842</td>
+                                <td class="p-3">
+                                    <span class="font-bold text-slate-800 block">Sneha Joshi</span>
+                                    <span class="text-slate-500 text-[10px]">→ Tata Consultancy Services</span>
+                                </td>
+                                <td class="p-3"><span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded">Stipend Band Override</span></td>
+                                <td class="p-3"><span class="text-amber-600 font-semibold">Pending Review</span></td>
+                                <td class="p-3 text-right space-x-2">
+                                    <button onclick="showToast('Request #REQ-8842 Approved by Central Admin!')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg font-medium transition">Approve</button>
+                                    <button onclick="showToast('Request #REQ-8842 Rejected!')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded-lg font-medium transition">Reject</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for One-Click Allocation Success -->
+    <div id="allocation-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl text-center space-y-4 border border-slate-100 animate-in fade-in zoom-in duration-200">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                <i data-lucide="check-circle-2" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">Smart Allocation Successful!</h3>
+            <p class="text-xs text-slate-600">The AI engine successfully matched and dispatched official internship offer letter #PMIN-OFF-8821 to the candidate's Aadhaar-linked DigiLocker.</p>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left space-y-1.5 text-xs">
+                <div class="flex justify-between"><span class="text-slate-500">Composite Score:</span> <strong class="text-slate-900" id="modal-score">88%</strong></div>
+                <div class="flex justify-between"><span class="text-slate-500">Enterprise:</span> <strong class="text-slate-900">Tata Motors EV R&D</strong></div>
+                <div class="flex justify-between"><span class="text-slate-500">Stipend Subsidy:</span> <strong class="text-emerald-600">₹25,000 / mo</strong></div>
+            </div>
+            <button onclick="closeAllocationModal()" class="w-full bg-navy-900 hover:bg-navy-800 text-white font-semibold py-3 rounded-xl text-xs shadow transition">
+                Return to Dashboard
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification Banner -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-navy-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center space-x-3 border border-slate-700">
+        <i data-lucide="info" class="w-5 h-5 text-saffron-500 shrink-0"></i>
+        <span id="toast-message" class="text-xs font-medium">Notification message</span>
+    </div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-saffron-500', 'text-white', 'shadow');
+                btn.classList.add('text-slate-300', 'hover:text-white', 'hover:bg-slate-700/50');
+            });
+
+            document.getElementById('tab-' + tabId).classList.add('active');
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-300', 'hover:text-white', 'hover:bg-slate-700/50');
+                activeBtn.classList.add('bg-saffron-500', 'text-white', 'shadow');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Toast Notification
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+
+        // Interactive Smart Match Simulator Algorithm
+        function runSimulation() {
+            const tech = parseInt(document.getElementById('sim-tech').value);
+            const priority = parseInt(document.getElementById('sim-priority').value);
+            const geo = parseInt(document.getElementById('sim-geo').value);
+
+            document.getElementById('val-tech').innerText = tech + '%';
+            document.getElementById('val-priority').innerText = priority + '%';
+            document.getElementById('val-geo').innerText = geo + '%';
+
+            // Composite formula weighted average
+            const finalScore = Math.round((tech * 0.45) + (priority * 0.25) + (geo * 0.30));
+            document.getElementById('sim-final-score').innerText = finalScore + '%';
+            document.getElementById('modal-score').innerText = finalScore + '%';
+
+            // SVG Circle Dash Array calculation (Circumference ~ 100)
+            const circlePath = document.getElementById('score-circle-path');
+            circlePath.setAttribute('stroke-dasharray', `${finalScore}, 100`);
+
+            const probBar = document.getElementById('sim-prob-bar');
+            const probText = document.getElementById('sim-prob-text');
+            const matchBadge = document.getElementById('sim-match-badge');
+
+            const prob = Math.min(99, Math.max(40, finalScore + 6));
+            probBar.style.width = prob + '%';
+            probText.innerText = prob.toFixed(1) + '%';
+
+            if (finalScore >= 80) {
+                matchBadge.innerText = 'Exceptional Fit';
+                matchBadge.className = 'block text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-0.5';
+            } else if (finalScore >= 60) {
+                matchBadge.innerText = 'Moderate Fit';
+                matchBadge.className = 'block text-[10px] font-bold text-amber-600 uppercase tracking-widest mt-0.5';
+            } else {
+                matchBadge.innerText = 'Low Fit - Reskilling Rec.';
+                matchBadge.className = 'block text-[10px] font-bold text-red-600 uppercase tracking-widest mt-0.5';
+            }
+        }
+
+        // Modal triggers
+        function triggerAllocationModal() {
+            document.getElementById('allocation-modal').classList.remove('hidden');
+        }
+        function closeAllocationModal() {
+            document.getElementById('allocation-modal').classList.add('hidden');
+            showToast('Allocation confirmed & recorded in central ledger!');
+        }
+
+        // Candidate skill tagger
+        function addSkill() {
+            const input = document.getElementById('new-skill-input');
+            const val = input.value.trim();
+            if(!val) return;
+            const container = document.getElementById('skill-tags-container');
+            const span = document.createElement('span');
+            span.className = 'bg-slate-100 text-slate-800 text-xs font-medium px-3 py-1.5 rounded-xl border border-slate-200 flex items-center space-x-1';
+            span.innerHTML = `<span>${val}</span> <button onclick="removeSkill(this)" class="text-slate-400 hover:text-red-500 ml-1">&times;</button>`;
+            container.appendChild(span);
+            input.value = '';
+            showToast(`Skill tag '${val}' added to AI vector profile!`);
+        }
+        function removeSkill(btn) {
+            btn.parentElement.remove();
+        }
+
+        // Initialize Charts when DOM loads
+        window.addEventListener('DOMContentLoaded', () => {
+            // Sector Chart
+            const ctxSector = document.getElementById('sectorChart').getContext('2d');
+            new Chart(ctxSector, {
+                type: 'bar',
+                data: {
+                    labels: ['IT & Software', 'FinTech', 'Manufacturing', 'Green Energy', 'Infrastructure'],
+                    datasets: [
+                        { label: 'Demand (Slots)', data: [45000, 32000, 38000, 24000, 21000], backgroundColor: '#FF9933', borderRadius: 6 },
+                        { label: 'Supply (Candidates)', data: [52000, 29000, 34000, 22000, 19000], backgroundColor: '#0B2545', borderRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { family: 'Inter', size: 11 } } } },
+                    scales: { y: { grid: { color: '#f1f1f1' } }, x: { grid: { display: false } } }
+                }
+            });
+
+            // Regional Chart
+            const ctxRegional = document.getElementById('regionalChart').getContext('2d');
+            new Chart(ctxRegional, {
+                type: 'doughnut',
+                data: {
+                    labels: ['South (Bengaluru/Chennai)', 'West (Pune/Mumbai)', 'North (NCR)', 'East (Kolkata)', 'Central/Other'],
+                    datasets: [{
+                        data: [38, 28, 20, 8, 6],
+                        backgroundColor: ['#FF9933', '#0B2545', '#138808', '#6366f1', '#cbd5e1'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { family: 'Inter', size: 11 } } } }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
